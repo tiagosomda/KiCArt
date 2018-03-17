@@ -1,5 +1,194 @@
 <html>
-    <body>
-        <h1>HELLO WORLD! TIME TO GET IT WORKING ON ALTSPACE VR</h1>
-    </body>
+<head>
+	<title>Introduction</title>
+	<script src="https://aframe.io/releases/0.7.0/aframe.min.js"></script>
+	<script src="altspace.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/nunjucks/3.0.0/nunjucks.min.js"></script>
+	<script src="https://cdn.rawgit.com/ngokevin/kframe/58b4de31/components/template/dist/aframe-template-component.min.js"></script>
+	<script src="gallery.js"></script>
+	<script src="poster.js"></script>
+	<script>
+
+	AFRAME.registerComponent('unfolding-path', {
+		schema: {
+			length: {type: 'int'}
+		},
+		init: function(){
+			var component = this;
+
+			var duration = 500;
+			var gap = 0.1;
+			var tileWidth = 4;
+
+			//todo meet in middle
+			function unfold(){
+				var max = component.data.length / tileWidth;
+				var i;
+				var halfMax = Math.floor(max / 2);
+				var secondHalfMax = max - halfMax;
+
+				for(i = 0; i < halfMax; i++){
+					console.log(i);
+					var z = -i * tileWidth - (tileWidth * gap);
+
+					var section = document.createElement("a-entity");
+					component.el.appendChild(section);
+					section.setAttribute('rotation', '90 180 0');
+					section.setAttribute('position', '-2 -2 0');
+					section.setAttribute('scale', '1 1 ' + (1 - gap));
+					section.setAttribute('n-object', 'res', 'architecture/floor-4w-4l');
+
+					var animation = document.createElement("a-animation");
+					animation.setAttribute('attribute', 'rotation');
+					animation.setAttribute('dur', duration);
+					animation.setAttribute('to', '0 180 0');
+					animation.setAttribute('delay', duration * 0.8 * i);
+					animation.setAttribute('easing', 'ease');
+					section.appendChild(animation);
+
+					animation = document.createElement("a-animation");
+					animation.setAttribute('attribute', 'position');
+					animation.setAttribute('dur', duration);
+					animation.setAttribute('to', '-2 0 ' + z);
+					animation.setAttribute('delay', duration * 0.8 * i);
+					animation.setAttribute('easing', 'ease');
+					section.appendChild(animation);
+				}
+
+				for(var j = 0; j < secondHalfMax; j++){
+					console.log(j);
+					var z = -(secondHalfMax - j) * tileWidth - (halfMax * tileWidth);
+
+					var section = document.createElement("a-entity");
+					component.el.appendChild(section);
+					section.setAttribute('rotation', '90 0 0');
+					section.setAttribute('position', '2 -2 ' + max * -tileWidth);
+					section.setAttribute('scale', '1 1 ' + (1 - gap));
+					section.setAttribute('n-object', 'res', 'architecture/floor-4w-4l');
+
+					var animation = document.createElement("a-animation");
+					animation.setAttribute('attribute', 'rotation');
+					animation.setAttribute('dur', duration);
+					animation.setAttribute('to', '0 0 0');
+					animation.setAttribute('delay', duration * 0.8 * j);
+					animation.setAttribute('easing', 'ease');
+					section.appendChild(animation);
+
+					animation = document.createElement("a-animation");
+					animation.setAttribute('attribute', 'position');
+					animation.setAttribute('dur', duration);
+					animation.setAttribute('to', '2 0 ' + z);
+					animation.setAttribute('delay', duration * 0.8 * j);
+					animation.setAttribute('easing', 'ease');
+					section.appendChild(animation);
+				}
+			}
+
+
+			function fold(){
+				component.el.innerHTML = '';
+			}
+
+			component.onStateAdded = function(){
+				var state = event.detail.state;
+				if (state === "unfolded") {
+					unfold();
+				}
+			}
+
+			component.onStateRemoved = function(){
+				var state = event.detail.state;
+				if (state === "unfolded") {
+					fold();
+				}
+			}
+
+			this.el.addEventListener('stateadded', component.onStateAdded);
+			this.el.addEventListener('stateremoved', component.onStateRemoved);
+		}
+	});
+
+</script>
+</head>
+<body>
+<a-scene debug altspace="fullspace: true" sync-system='author: altspacevr; app: native-gallery'>
+
+	<!-- Playground Sign -->
+	<a-entity id='welcome' position='0 6 -7' rotation='-15 180 0' scale="1.5 1.5 1.5">
+
+		<a-entity id="mark">
+			<a-entity position='0 2.6 -0.6' rotation='0 180 0'
+				n-object="res:ui/altspacevr-logo" scale="2 2 2">
+			</a-entity>
+
+			<a-entity position='0 1.25 -0.6' rotation='0 180 0'
+				n-text='text: KiC Art;'></a-entity>
+
+			<a-entity position='-1.8 0.65 -0.6' rotation='0 180 0'
+				n-text='text: PROTO; fontSize:4'></a-entity>
+		</a-entity>
+
+		<a-entity id="backdrop" scale='0.7 0.8 1' position="0 0.5 0">
+			<a-entity n-object="res:architecture/wall-4w-4h" rotation="0 90 0" position="0 0 0"></a-entity>
+			<a-entity n-object="res:architecture/wall-4w-4h" rotation="0 90 0" position="-4 0 0"></a-entity>
+		</a-entity>
+
+		<a-entity position='12 -2 10' rotation="0 0 30" n-object='res:effects/fireworks'></a-entity>
+		<a-entity position='-12 -2 10' rotation="0 0 -30" n-object='res:effects/fireworks'></a-entity>
+	</a-entity>
+
+	<a-entity position='0 0.1 -3.5' rotation="270 0 0"
+		n-text='text: ^ Welcome ^; fontSize:9'></a-entity>
+
+	<a-entity id="path1" unfolding-path="length:20" position="0 0 -6"></a-entity>
+	<a-entity id="trigger1" position="0 0 -16" n-box-collider="isTrigger:true; type:environment; size: 8 4 27" n-container="capacity:1"
+		wire="target:#path1; gained: container-full; gain: unfolded"
+		wire__0="target:#path1; lost: container-full; lose: unfolded">
+	</a-entity>
+
+	<!-- <a-entity n-object="res:architecture/floor-4w-4l" position="-2 0 -6" rotation="90 180 0">
+		<a-animation attribute="rotation" dur="1000" to="0 180 0" easing="ease"></a-animation>
+	</a-entity>
+	<a-entity n-object="res:architecture/floor-4w-4l" position="-2 0 -10" rotation="90 180 0">
+		<a-animation attribute="rotation" dur="1000" to="0 180 0" easing="ease"></a-animation>
+	</a-entity> -->
+
+	<a-entity position='10 5 0' rotation="0 270 0"
+		n-text='text: Use the app selector to explore other playground apps; fontSize:6'></a-entity>
+
+	<a-entity class="platform" position="0 0 0">
+		<a-entity scale="1.5 1 1.5">
+			<a-entity n-object="res:architecture/floor-slice-concave-4r" position="4 0 0"></a-entity>
+			<a-entity n-object="res:architecture/floor-slice-concave-4r" position="0 0 -4" rotation="0 90 0"></a-entity>
+			<a-entity n-object="res:architecture/floor-slice-concave-4r" position="-4 0 0" rotation="0 180 0"></a-entity>
+			<a-entity n-object="res:architecture/floor-slice-concave-4r" position="0 0 4" rotation="0 270 0"></a-entity>
+			<a-entity class="ring" rotation="0 45 0">
+				<a-entity n-object="res:architecture/wall-base-curve-concave-4r" position="4 0 0"></a-entity>
+				<!-- <a-entity n-object="res:architecture/wall-base-curve-concave-4r" position="0 0 -4" rotation="0 90 0"></a-entity> -->
+				<a-entity n-object="res:architecture/wall-base-curve-concave-4r" position="-4 0 0" rotation="0 180 0"></a-entity>
+				<a-entity n-object="res:architecture/wall-base-curve-concave-4r" position="0 0 4" rotation="0 270 0"></a-entity>
+
+				<!-- <a-entity n-object="res:architecture/wall-base-curve-convex-4r" position="4 0 0" rotation="0 270 0"></a-entity> -->
+				<a-entity n-object="res:architecture/wall-base-curve-convex-4r" position="0 0 -4"></a-entity>
+				<a-entity n-object="res:architecture/wall-base-curve-convex-4r" position="-4 0 0" rotation="0 90 0"></a-entity>
+				<a-entity n-object="res:architecture/wall-base-curve-convex-4r" position="0 0 4" rotation="0 180 0"></a-entity>
+			</a-entity>
+			<a-entity class="ring" position="0 4 0" rotation="0 -45 180">
+				<a-entity n-object="res:architecture/wall-base-curve-concave-4r" position="4 0 0"></a-entity>
+				<!-- <a-entity n-object="res:architecture/wall-base-curve-concave-4r" position="0 0 -4" rotation="0 90 0"></a-entity> -->
+				<a-entity n-object="res:architecture/wall-base-curve-concave-4r" position="-4 0 0" rotation="0 180 0"></a-entity>
+				<a-entity n-object="res:architecture/wall-base-curve-concave-4r" position="0 0 4" rotation="0 270 0"></a-entity>
+
+				<!-- <a-entity n-object="res:architecture/wall-base-curve-convex-4r" position="4 0 0" rotation="0 270 0"></a-entity> -->
+				<a-entity n-object="res:architecture/wall-base-curve-convex-4r" position="0 0 -4"></a-entity>
+				<a-entity n-object="res:architecture/wall-base-curve-convex-4r" position="-4 0 0" rotation="0 90 0"></a-entity>
+				<a-entity n-object="res:architecture/wall-base-curve-convex-4r" position="0 0 4" rotation="0 180 0"></a-entity>
+			</a-entity>
+		</a-entity>
+	</a-entity>
+
+	<a-entity position='6 0.25 -32' rotation='0 180 0' template='src: gallery.html'></a-entity>
+
+</a-scene>
+</body>
 </html>
