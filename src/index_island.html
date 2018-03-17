@@ -1,0 +1,23 @@
+<html>
+<head>
+	<title>Introduction</title>
+	<script src="https://aframe.io/releases/0.7.0/aframe.min.js"></script>
+	<script src="altspace.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/nunjucks/3.0.0/nunjucks.min.js"></script>
+	<script src="https://cdn.rawgit.com/ngokevin/kframe/58b4de31/components/template/dist/aframe-template-component.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/native-promise-only/0.8.1/npo.js"></script>
+</head>
+<body>
+<a-scene debug altspace="fullspace: true" sync-system='author: altspacevr; app: native-gallery'>
+		<a-assets>
+			<!-- <a-asset-item id="elephant" src="models/Avocado/glTF/Avocado.gltf"></a-asset-item> -->
+			<!-- <a-asset-item id="stand" src="models/Stand/Stand.gltf"></a-asset-item> -->
+			<!-- <a-asset-item id="stand" src="models/Floor/Floor.gltf"></a-asset-item> -->
+			<a-asset-item id="island" src="models/Island/Island.gltf"></a-asset-item>
+		</a-assets>
+		<a-entity position='0 1.5 0' scale='3 3 3'>
+			<a-entity gltf-model="#island"></a-entity>
+		<a-entity>
+</a-scene>
+</body>
+</html>
